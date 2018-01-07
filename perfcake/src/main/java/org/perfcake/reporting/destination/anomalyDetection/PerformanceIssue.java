@@ -33,11 +33,6 @@ public class PerformanceIssue {
    private boolean regularSpike = false;
 
    /**
-    * A flag for a traffic spike issue.
-    */
-   private boolean trafficSpike = false;
-
-   /**
     * A constructor for performance issue with setting the flag for the issue.
     * @param type
     *       Type of the issue.
@@ -46,7 +41,6 @@ public class PerformanceIssue {
       this.type = type;
       degradation = PerformanceIssueType.DEGRADATION.equals(type);
       regularSpike = PerformanceIssueType.REGULAR_SPIKES.equals(type);
-      trafficSpike = PerformanceIssueType.TRAFIC_SPIKE.equals(type);
    }
 
    public boolean isDegradation() {
@@ -54,10 +48,6 @@ public class PerformanceIssue {
    }
 
    public boolean isRegularSpike() { return regularSpike; }
-
-   public boolean isTrafficSpike() {
-      return trafficSpike;
-   }
 
    public PerformanceIssueType getType() {
       return type;

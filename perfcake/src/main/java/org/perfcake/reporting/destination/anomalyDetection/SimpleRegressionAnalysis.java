@@ -155,9 +155,6 @@ public class SimpleRegressionAnalysis {
          if(p < alpha){
             // dependence -> possibly degradation
             return PerformanceIssueType.DEGRADATION;
-         }else{
-            // no dependence -> possible spikes
-            return PerformanceIssueType.TRAFIC_SPIKE;
          }
       }
       // slope sufficiently far from zero value -> consistent trend
@@ -285,13 +282,13 @@ public class SimpleRegressionAnalysis {
     */
    private void setDetectedPerfIssues(){
       // set occurred PI for the whole set
-      System.out.println("issues len: " + issues.size());
-      degradation = issues.stream().anyMatch(it -> PerformanceIssueType.DEGRADATION.equals(it.getType()));
-      regularSpikes = issues.stream().anyMatch(it -> PerformanceIssueType.REGULAR_SPIKES.equals(it.getType()));
-      trafficSpike = issues.stream().anyMatch(it -> PerformanceIssueType.TRAFIC_SPIKE.equals(it.getType()));
-      System.out.println("Degradation: " + degradation);
-      System.out.println("Traffic spikes: " + trafficSpike);
-      System.out.println("Regular spikes: " + regularSpikes);
+      if(issues != null) {
+         System.out.println("issues len: " + issues.size());
+         degradation = issues.stream().anyMatch(it -> PerformanceIssueType.DEGRADATION.equals(it.getType()));
+         regularSpikes = issues.stream().anyMatch(it -> PerformanceIssueType.REGULAR_SPIKES.equals(it.getType()));
+         System.out.println("Degradation: " + degradation);
+         System.out.println("Regular spikes: " + regularSpikes);
+      }
    }
 
    /**
@@ -312,12 +309,6 @@ public class SimpleRegressionAnalysis {
          int regOccurrence = (int)issues.stream().filter(PerformanceIssue::isRegularSpike).count();
          regsPerc = (100*regOccurrence)/numberOfPossibilities;
          System.out.println("REG occurance: " + regOccurrence + " prob: " + regsPerc + "%");
-
-      }
-      if(trafficSpike){
-         int trafOccurrence = (int) issues.stream().filter(PerformanceIssue::isTrafficSpike).count();
-         trafSPerc = (100*trafOccurrence)/numberOfPossibilities;
-         System.out.println("TRAF occurance: " + trafOccurrence + " prob: " + trafSPerc + "%");
 
       }
       System.out.println("DEG: " + degPerc + "%");

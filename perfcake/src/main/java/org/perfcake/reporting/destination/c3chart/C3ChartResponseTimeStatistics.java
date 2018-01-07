@@ -57,28 +57,30 @@ public class C3ChartResponseTimeStatistics implements C3ChartResultsAnalysis {
    private List<String> statParamValueList;
 
 
-   C3ChartResponseTimeStatistics(){
-      this.raLabelList = new ArrayList<>();
-      this.raLabelList.add("Threshold");
-      this.raLabelList.add("Average");
-      this.raLabelList.add("95th percentile");
-      this.raLabelList.add("99th percentile");
-      this.raLabelList.add("Degradation");
-      this.raLabelList.add("Traffic Spike");
-      this.raLabelList.add("Regular Spikes");
+   C3ChartResponseTimeStatistics(boolean isRA, boolean isSimpleStats){
+      if(isRA) {
+         this.raLabelList = new ArrayList<>();
+         this.raLabelList.add("Threshold");
+         this.raLabelList.add("Average");
+         this.raLabelList.add("95th percentile");
+         this.raLabelList.add("99th percentile");
+         this.raLabelList.add("Degradation");
+         this.raLabelList.add("Spikes");
+      }
 
       this.raValueList = new ArrayList<>();
 
       this.raEvaluationList = new ArrayList<>();
 
-      this.statParamLabelList = new ArrayList<>();
-      this.statParamLabelList.add("Intercept");
-      this.statParamLabelList.add("Slope");
-      this.statParamLabelList.add("R");
-      this.statParamLabelList.add("R square");
-      this.statParamLabelList.add("Significance");
-      this.statParamLabelList.add("Variance");
-
+      if(isSimpleStats) {
+         this.statParamLabelList = new ArrayList<>();
+         this.statParamLabelList.add("Intercept");
+         this.statParamLabelList.add("Slope");
+         this.statParamLabelList.add("R");
+         this.statParamLabelList.add("R square");
+         this.statParamLabelList.add("Significance");
+         this.statParamLabelList.add("Variance");
+      }
       this.statParamValueList = new ArrayList<>();
    }
 
@@ -185,7 +187,6 @@ public class C3ChartResponseTimeStatistics implements C3ChartResultsAnalysis {
       this.raValueList.add(String.valueOf(crystalDestination.getStats().getPercentile95().intValue()) + " ms");
       this.raValueList.add(String.valueOf(crystalDestination.getStats().getPercentile99().intValue()) + " ms");
       this.raValueList.add(String.valueOf(crystalDestination.getRa().getDegPerc()) + " %");
-      this.raValueList.add(String.valueOf(crystalDestination.getRa().getTrafSPerc()) + " %");
       this.raValueList.add(String.valueOf(crystalDestination.getRa().getRegsPerc()) + " %");
    }
 
@@ -196,7 +197,6 @@ public class C3ChartResponseTimeStatistics implements C3ChartResultsAnalysis {
       addColoredEvaluation(crystalDestination.getStats().isThreshold95thExceeded(), this.raEvaluationList);
       addColoredEvaluation(crystalDestination.getStats().isThreshold99thExceeded(), this.raEvaluationList);
       addColoredEvaluation(crystalDestination.getRa().isDegradation(), this.raEvaluationList);
-      addColoredEvaluation(crystalDestination.getRa().isTrafficSpike(), this.raEvaluationList);
       addColoredEvaluation(crystalDestination.getRa().isRegularSpikes(), this.raEvaluationList);
    }
 

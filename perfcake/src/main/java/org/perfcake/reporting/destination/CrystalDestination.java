@@ -41,8 +41,8 @@ import static org.perfcake.common.PeriodType.*;
 import static org.perfcake.reporting.destination.ChartDestination.ChartType.LINE;
 
 /**
- * A destination that performs heuristics for anomalies detection and
- * compiles all tests results into one document report.
+ * A destination that performs heuristics for anomaly detection and
+ * compiles all specified tests results into one HTML document report.
  *
  * @author <a href="mailto:kurovamartina@gmail.com">Martina Kůrová</a>
  */
@@ -114,6 +114,11 @@ public class CrystalDestination extends AbstractDestination {
    private boolean resultsAnalysis = true;
 
    /**
+    * An indicator to display simple statistics.
+    */
+   private boolean simpleStats = false;
+
+   /**
     * Threshold for monitored metrics
     */
    private Double threshold = null;
@@ -156,7 +161,7 @@ public class CrystalDestination extends AbstractDestination {
    /**
     * The type of the X axis. It can display the overall progress of the test in Percents, Time, or Iteration numbers.
     */
-   private PeriodType chartXAxisType = TIME;
+   private PeriodType chartXAxisType = PeriodType.TIME;
 
    /**
     * Height of the resulting chart in pixels.
@@ -166,12 +171,12 @@ public class CrystalDestination extends AbstractDestination {
    /**
     * The chart can be either of line or bar type. Line is the default.
     */
-   private ChartDestination.ChartType chartType = LINE;
+   private ChartDestination.ChartType chartType = ChartDestination.ChartType.LINE;
 
 
    @Override
    public void open() {
-      System.out.println("PerfTestName: " + title);
+      log.debug("PerfTestName: " + title);
       if(title == null) {
          resultSetKey = "mock";
          title = resultSetKey;
@@ -206,58 +211,75 @@ public class CrystalDestination extends AbstractDestination {
       }
    }
 
+   public String getParentReporterName(){
+      return this.getParentReporter().getClass().getSimpleName();
+   }
    /**
     * According to an actual reporter, performs adequate heuristics for detection anomalies.
     */
    private void processAnomalyDetection(){
-      String actualReporter = this.getParentReporter().getClass().getSimpleName();
+      String actualReporter = getParentReporterName();
       switch (actualReporter){
          case "ResponseTimeHistogramReporter":
          case "ResponseTimeStatsReporter":
+         // TODO adapt to other <Reporters>
          //case "ThroughputStatsReporter":
          //case "IterationsPerSecondReporter":
-            // perform regression analysis
             List<Measurement> dataSet = sharedResultsMap.get(resultSetKey);
-            ra = new SimpleRegressionAnalysis();
-            ra.setThreshold(threshold.doubleValue());
-            Set<BoundPeriod<Destination>> reportingPeriods = getParentReporter().getReportingPeriods();
-            int numberOfRecordsInWindow = 0;
-            for(BoundPeriod<Destination> bpd: reportingPeriods){
-               if("CrystalDestination".equals(bpd.getBinding().getClass().getSimpleName())){
-                  switch (bpd.getPeriodType()){
-                     case TIME:
-                        numberOfRecordsInWindow = window/(int)bpd.getPeriod();
-                        System.out.println("window: " + window);
-                        System.out.println("period: " + String.valueOf((int)bpd.getPeriod()));
-                        System.out.println("numberOfRecordsInWindow: " + numberOfRecordsInWindow);
-                        break;
-                     default:
 
-                  }
-               }
-            }
-            ra.setWindow(numberOfRecordsInWindow);
-            ra.setDataSet(dataSet);
-            ra.run();
-            System.out.println("For test '" + resultSetKey + "' slope result is '" + ra.getSlope() + "'.");
-            System.out.println("For test '" + resultSetKey + "' R is '" + ra.getR() + "'.");
-            System.out.println("For test '" + resultSetKey + "' R square is '" + ra.getrSquare() + "'.");
-            System.out.println("For test '" + resultSetKey + "' significance is '" + ra.getP() + "'.");
-            System.out.println("For test '" + resultSetKey + "' threshold was '" + String.valueOf(ra.isThresholdExceeded()) + "'.");
+            // perform regression analysis
+            performRegressionAnalysis(dataSet);
 
-            stats = new BasicStatisticsAnalysis();
-            stats.setDataSet(dataSet);
-            stats.setThreshold(threshold.doubleValue());
-            stats.run();
-            System.out.println("For test '" + resultSetKey + "' mean was '" + String.valueOf(stats.getMean()) + "'.");
-            System.out.println("For test '" + resultSetKey + "' stdErr was '" + String.valueOf(stats.getStandardDeviation()) + "'.");
-            System.out.println("For test '" + resultSetKey + "' 95percentile was '" + String.valueOf(stats.getPercentile95()) + "'.");
-            System.out.println("For test '" + resultSetKey + "' 99percentile was '" + String.valueOf(stats.getPercentile99()) + "'.");
-            System.out.println("For test '" + resultSetKey + "' variance was '" + String.valueOf(stats.getVariance()) + "'.");
+            // TODO the <threshold> property must be set
+            performBasicStatistics(dataSet);
+
             break;
          default:
             // nothing to do here
       }
+   }
+
+
+   private void performRegressionAnalysis(List<Measurement> dataSet){
+      ra = new SimpleRegressionAnalysis();
+      ra.setThreshold(threshold.doubleValue());
+      Set<BoundPeriod<Destination>> reportingPeriods = getParentReporter().getReportingPeriods();
+      int numberOfRecordsInWindow = 0;
+      for (BoundPeriod<Destination> bpd : reportingPeriods) {
+         if ("CrystalDestination".equals(bpd.getBinding().getClass().getSimpleName())) {
+            switch (bpd.getPeriodType()) {
+               case TIME:
+                  numberOfRecordsInWindow = window / (int) bpd.getPeriod();
+                  log.debug("window: " + window);
+                  log.debug("period: " + String.valueOf((int) bpd.getPeriod()));
+                  log.debug("numberOfRecordsInWindow: " + numberOfRecordsInWindow);
+                  break;
+               default:
+            }
+         }
+      }
+      ra.setWindow(numberOfRecordsInWindow);
+      ra.setDataSet(dataSet);
+      ra.run();
+
+      log.debug("For test " + resultSetKey + " 'slope' result is '" + ra.getSlope() + "'.");
+      log.debug("For test " + resultSetKey + " 'R' is '" + ra.getR() + "'.");
+      log.debug("For test " + resultSetKey + " 'R' square' is '" + ra.getrSquare() + "'.");
+      log.debug("For test " + resultSetKey + " 'significance' is '" + ra.getP() + "'.");
+      log.debug("For test " + resultSetKey + " 'threshold' was '" + String.valueOf(ra.isThresholdExceeded()) + "'.");
+   }
+
+   private void performBasicStatistics(List<Measurement> dataSet){
+      stats = new BasicStatisticsAnalysis();
+      stats.setDataSet(dataSet);
+      stats.setThreshold(threshold.doubleValue());
+      stats.run();
+
+      log.debug("For test " + resultSetKey + " 'mean' was '" + String.valueOf(stats.getMean()) + "'.");
+      log.debug("For test " + resultSetKey + " 'stdErr' was '" + String.valueOf(stats.getStandardDeviation()) + "'.");
+      log.debug("For test " + resultSetKey + " '95percentile' was '" + String.valueOf(stats.getPercentile95()) + "'.");
+      log.debug("For test " + resultSetKey + " '99percentile' was '" + String.valueOf(stats.getPercentile99()) + "'.");
+      log.debug("For test " + resultSetKey + " 'variance' was '" + String.valueOf(stats.getVariance()) + "'.");
    }
 
    /**
@@ -267,7 +289,7 @@ public class CrystalDestination extends AbstractDestination {
       // for all tests
       for (Map.Entry e : sharedResultsMap.entrySet()) {
          List<Measurement> measurements = sharedResultsMap.get(e.getKey());
-         System.out.println(resultSetKey + " : generating chart for : " + e.getKey());
+         log.debug(resultSetKey + " : generating chart for : " + e.getKey());
          // generate C3 chart
          C3ChartHelper helper = new C3ChartHelper(instances.get(e.getKey()));
          for(Measurement m : measurements){
@@ -357,7 +379,7 @@ public class CrystalDestination extends AbstractDestination {
    }
 
    /**
-    * Gets the indicator to perform results analysis.
+    * Gets the indicator for performing results analysis.
     *
     * @return The boolean value of resultsAnalysis.
     */
@@ -366,13 +388,32 @@ public class CrystalDestination extends AbstractDestination {
    }
 
    /**
-    * Sets the indicator to perform results analysis.
+    * Sets the indicator for performing results analysis.
     *
     * @param resultsAnalysis
     *       The boolean value of resultsAnalysis.
     */
    public void setResultsAnalysis(boolean resultsAnalysis) {
       this.resultsAnalysis = resultsAnalysis;
+   }
+
+   /**
+    * Gets the indicator for displaying the simple statistics.
+    *
+    * @return The boolean value of simpleStats.
+    */
+   public boolean isSimpleStats() {
+      return simpleStats;
+   }
+
+   /**
+    * Sets the indicator for displaying the simple statistics.
+    *
+    * @param simpleStats
+    *       The boolean value of simpleStats.
+    */
+   public void setSimpleStats(boolean simpleStats) {
+      this.simpleStats = simpleStats;
    }
 
    /**
@@ -556,5 +597,37 @@ public class CrystalDestination extends AbstractDestination {
    public CrystalDestination setChartType(final ChartDestination.ChartType chartType) {
       this.chartType = chartType;
       return this;
+   }
+
+   public static ConcurrentHashMap<String, List<Measurement>> getSharedResultsMap() {
+      return sharedResultsMap;
+   }
+
+   public static void setSharedResultsMap(ConcurrentHashMap<String, List<Measurement>> sharedResultsMap) {
+      CrystalDestination.sharedResultsMap = sharedResultsMap;
+   }
+
+   public static Map<String, Boolean> getFinishedThreadList() {
+      return finishedThreadList;
+   }
+
+   public static void setFinishedThreadList(Map<String, Boolean> finishedThreadList) {
+      CrystalDestination.finishedThreadList = finishedThreadList;
+   }
+
+   public static String getMasterThreadName() {
+      return masterThreadName;
+   }
+
+   public static void setMasterThreadName(String masterThreadName) {
+      CrystalDestination.masterThreadName = masterThreadName;
+   }
+
+   public boolean isMasterThread() {
+      return masterThread;
+   }
+
+   public void setMasterThread(boolean masterThread) {
+      this.masterThread = masterThread;
    }
 }

@@ -141,6 +141,8 @@ public class C3ChartHelper {
          chart.setGroup(crystalDestination.getChartGroup());
          chart.setAttributes(attributes);
          chart.setName(crystalDestination.getTitle());
+         chart.setResultsAnalysis(crystalDestination.isResultsAnalysis());
+         chart.setSimpleStats(crystalDestination.isSimpleStats());
          switch (actualReporter) {
             case "ResponseTimeStatsReporter":
                // add regions - highlighted suspicious intervals
@@ -181,10 +183,14 @@ public class C3ChartHelper {
     */
    private C3ChartResultsAnalysis addResultsAnalysisContent(CrystalDestination crystalDestination){
       // TODO ! C3ChartResponseTimeStatistics only
-      C3ChartResponseTimeStatistics resultsAnalysis = new C3ChartResponseTimeStatistics();
-      resultsAnalysis.addRaValueList(crystalDestination);
-      resultsAnalysis.addRaEvaluationList(crystalDestination);
-      resultsAnalysis.addStatValueList(crystalDestination);
+      C3ChartResponseTimeStatistics resultsAnalysis = new C3ChartResponseTimeStatistics(crystalDestination.isResultsAnalysis(), crystalDestination.isSimpleStats());
+      if(crystalDestination.isResultsAnalysis()) {
+         resultsAnalysis.addRaValueList(crystalDestination);
+         resultsAnalysis.addRaEvaluationList(crystalDestination);
+      }
+      if(crystalDestination.isSimpleStats()){
+         resultsAnalysis.addStatValueList(crystalDestination);
+      }
       return resultsAnalysis;
    }
 

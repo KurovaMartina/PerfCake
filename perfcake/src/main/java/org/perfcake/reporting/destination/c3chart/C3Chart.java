@@ -113,6 +113,16 @@ public class C3Chart {
    private ChartDestination.ChartType type = LINE;
 
    /**
+    * An indicator to perform results analysis.
+    */
+   private boolean resultsAnalysis = true;
+
+   /**
+    * An indicator to display simple statistics.
+    */
+   private boolean simpleStats = false;
+
+   /**
     * Regions for highlighting suspicious results
     */
    private List<String> regions;
@@ -471,12 +481,54 @@ public class C3Chart {
       this.statParamValueList = statParamValueList;
    }
 
-   public void addResultsAnalysisContent(C3ChartResultsAnalysis rrraaa) {
-      this.raLabelList = rrraaa.getRaLabelList();
-      this.raValueList = rrraaa.getRaValueList();
-      this.raEvaluationList = rrraaa.getRaEvaluationList();
-      this.statParamLabelList = rrraaa.getStatParamLabelList();
-      this.statParamValueList = rrraaa.getStatParamValueList();
+   /**
+    * Gets the indicator for performing results analysis.
+    *
+    * @return The boolean value of resultsAnalysis.
+    */
+   public boolean isResultsAnalysis() {
+      return resultsAnalysis;
+   }
+
+   /**
+    * Sets the indicator for performing results analysis.
+    *
+    * @param resultsAnalysis
+    *       The boolean value of resultsAnalysis.
+    */
+   public void setResultsAnalysis(boolean resultsAnalysis) {
+      this.resultsAnalysis = resultsAnalysis;
+   }
+
+   /**
+    * Gets the indicator for displaying the simple statistics.
+    *
+    * @return The boolean value of simpleStats.
+    */
+   public boolean isSimpleStats() {
+      return simpleStats;
+   }
+
+   /**
+    * Sets the indicator for displaying the simple statistics.
+    *
+    * @param simpleStats
+    *       The boolean value of simpleStats.
+    */
+   public void setSimpleStats(boolean simpleStats) {
+      this.simpleStats = simpleStats;
+   }
+
+   /**
+    * Adds results analysis content.
+    * @param c3ChartRA
+    */
+   public void addResultsAnalysisContent(C3ChartResultsAnalysis c3ChartRA) {
+      this.raLabelList = c3ChartRA.getRaLabelList();
+      this.raValueList = c3ChartRA.getRaValueList();
+      this.raEvaluationList = c3ChartRA.getRaEvaluationList();
+      this.statParamLabelList = c3ChartRA.getStatParamLabelList();
+      this.statParamValueList = c3ChartRA.getStatParamValueList();
    }
 
    @Override

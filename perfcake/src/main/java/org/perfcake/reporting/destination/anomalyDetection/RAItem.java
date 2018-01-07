@@ -172,7 +172,6 @@ public class RAItem {
       if(!PerformanceIssueType.OK.equals(issueType)){
          if(PerformanceIssueType.DEGRADATION.equals(issueType)) degradation = true;
          if(PerformanceIssueType.REGULAR_SPIKES.equals(issueType)) regularSpikes = true;
-         if(PerformanceIssueType.TRAFIC_SPIKE.equals(issueType)) trafficSpike = true;
       }
 
       System.out.println(".");

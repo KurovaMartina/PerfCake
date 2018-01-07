@@ -186,8 +186,8 @@ public class C3ChartHtmlTemplates {
     * @throws PerfCakeException
     *       When it was not possible to read or parse the template.
     */
-   private static String getRaDiv(final List<String> labelList, final List<String> valueList, final List<String> evaluationList,
-                                  final List<String> statLabelList, final List<String> statValueList) throws PerfCakeException {
+   private static String getRaDiv(final boolean resultAnalysis, final List<String> labelList, final List<String> valueList, final List<String> evaluationList,
+                                  final boolean simpleStats, final List<String> statLabelList, final List<String> statValueList) throws PerfCakeException {
       final StringBuilder raLabelEntries = new StringBuilder();
       final StringBuilder raValueEntries = new StringBuilder();
       final StringBuilder raEvaluationEntries = new StringBuilder();
@@ -221,8 +221,22 @@ public class C3ChartHtmlTemplates {
       }
 
       final Properties props = new Properties();
+      if(resultAnalysis){
+         props.setProperty("ra-title-css", "visible");
+         props.setProperty("ra-label-css", "visible");
+      }
+      else{
+         props.setProperty("ra-title-css", "none");
+         props.setProperty("ra-label-css", "none");
+      }
       props.setProperty("ra-labels", raLabelEntries.toString());
       props.setProperty("ra-values", raValueEntries.toString());
+      if(simpleStats){
+         props.setProperty("simple-stats-label-css", "visible");
+
+      }else{
+         props.setProperty("simple-stats-label-css", "none");
+      }
       props.setProperty("ra-evaluations", raEvaluationEntries.toString());
       props.setProperty("stat-params-labels", statParamLabelEntries.toString());
       props.setProperty("stat-params-values", statParamValueEntries.toString());
@@ -340,8 +354,8 @@ public class C3ChartHtmlTemplates {
                final String label = chart.getName() + " (created: " + getCreatedAsString(chart) + ")";
                sb.append(getHeading(4, chart.getBaseName(), label));
                sb.append(getChartDiv(chart.getBaseName()));
-               sb.append(getRaDiv(chart.getRaLabelList(), chart.getRaValueList(), chart.getRaEvaluationList(),
-                     chart.getStatParamLabelList(), chart.getStatParamValueList()));
+               sb.append(getRaDiv(chart.isResultsAnalysis(), chart.getRaLabelList(), chart.getRaValueList(), chart.getRaEvaluationList(),
+                        chart.isSimpleStats(), chart.getStatParamLabelList(), chart.getStatParamValueList()));
                toc.put(chart.getBaseName(), label);
             }
          }
@@ -402,7 +416,12 @@ public class C3ChartHtmlTemplates {
       props.setProperty("chartName", chart.getName());
       props.setProperty("height", String.valueOf(chart.getHeight()));
       props.setProperty("type", chart.getType() == ChartDestination.ChartType.BAR ? "type: 'bar'," : "");
-      props.setProperty("regions", StringUtils.join(chart.getRegions(), ","));
+      if(chart.getRegions() != null) {
+         props.setProperty("regions", StringUtils.join(chart.getRegions(), ","));
+      }
+      else{
+         props.setProperty("regions", "");
+      }
 
       switch (chart.getxAxisType()) {
          case TIME:

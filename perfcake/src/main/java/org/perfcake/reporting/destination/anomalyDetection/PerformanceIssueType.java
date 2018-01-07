@@ -7,7 +7,6 @@ package org.perfcake.reporting.destination.anomalyDetection;
  */
 public enum PerformanceIssueType {
    REGULAR_SPIKES,
-   TRAFIC_SPIKE,
    DEGRADATION,
    THRESHOLD_EXCEEDED,
    OK;
